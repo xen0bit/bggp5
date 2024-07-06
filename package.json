@@ -1,0 +1,20 @@
+{
+  "name": "@wasm/hello_world_c",
+  "description": "",
+  "version": "1.0.0",
+  "watch": {
+    "WASM": "templates"
+  },
+  "scripts": {
+    "build": "python3 templates/templater.py && npx -p wabt wat2wasm out/rendered.wat -o out/rendered.html",
+    "validate": "npx -p wabt wasm-validate out/rendered.html -v",
+    "execute": "node helpers/runwasm.js",
+    "wasm2wat": "npx -p wabt wasm2wat out/rendered.html -o out/stripped.wat",
+    "watch": "npm-watch WASM",
+    "WASM": "npm run build && npm run validate && npm run execute && ls -la out/rendered.html"
+  },
+  "dependencies": {
+    "npm-watch": "^0.10.0",
+    "wabt": "^1.0.23"
+  }
+}

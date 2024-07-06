@@ -1,0 +1,2 @@
+function e(s){return s.match(/(.)\1*/g).reduce((r,c)=>r+c.length+c[0],'')};
+function d(s){return s.match(/(\d[a-z\s])\1*/ig).reduce((r,p)=>r+p[p.length-1].repeat(parseInt(p)),'')};
