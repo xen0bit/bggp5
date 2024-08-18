@@ -1,7 +1,8 @@
 (module
-  ;; debug
+  ;; debug print i32 value
   (import "dbg" "i32" (func $dbgi32 (param i32)))
-  (import "x" "randInRange" (func $randInRange (param i32 i32)(result i32)))
+  ;; debug print i32 value and put it back on stack transparently
+  (import "dbg" "i32t" (func $dbgi32t (param i32) (result i32)))
   (import "js" "mem" (memory 1024))
   (export  "{htmlStub}" (func $init))
 
@@ -318,6 +319,10 @@
   i32.rem_u
   local.set $c
 
+  ;;dbg
+  local.get $c
+  call $dbgi32
+
   (loop $drawRows
           ;; add one to $i
           local.get $i
@@ -335,6 +340,7 @@
           global.get $fontWriteCursorX
           global.get $fontWriteCursorY
           call $xyToOffset
+          call $dbgi32t
           local.get $t
           i64.store
 
@@ -408,9 +414,6 @@
   global.set $fontWriteCursorY
 
   ;; A
-  i32.const 41
-  call $drawChar
-
   i32.const 41
   call $drawChar
 )

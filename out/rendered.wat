@@ -1,9 +1,10 @@
 (module
-  ;; debug
+  ;; debug print i32 value
   (import "dbg" "i32" (func $dbgi32 (param i32)))
-  (import "x" "randInRange" (func $randInRange (param i32 i32)(result i32)))
+  ;; debug print i32 value and put it back on stack transparently
+  (import "dbg" "i32t" (func $dbgi32t (param i32) (result i32)))
   (import "js" "mem" (memory 1024))
-  (export  "<html><style>#c {min-width: 512;}</style><canvas id='c' width=4096 height=4096 /><script>var m = new WebAssembly.Memory({ initial: 1024 });var current = new Uint8ClampedArray(m.buffer);var cvs = document.getElementById('c');var ctx = cvs.getContext('2d');fetch(location,{ mode: 'no-cors' }).then(e => e.arrayBuffer()).then(e => WebAssembly.instantiate(e, {dbg: {i32: function (i) {function numToBin(num) {return (num >>> 0).toString(2).padStart(32, '0').match(/.{1,8}/g).join('_');}console.log(i, numToBin(i));}},x: {randInRange: function (min, max) {return Math.random() * (max - min) + min;}}, js: { mem: m }})); function step() {ctx.putImageData(new ImageData(new Uint8ClampedArray(m.buffer),cvs.width,cvs.height),0,0); requestAnimationFrame(step);}requestAnimationFrame(step);</script><html>" (func $init))
+  (export  "<html><style>#c {min-width: 512;}</style><canvas id='c' width=4096 height=4096 /><script>var m = new WebAssembly.Memory({ initial: 1024 });var current = new Uint8ClampedArray(m.buffer);var cvs = document.getElementById('c');var ctx = cvs.getContext('2d');fetch(location,{ mode: 'no-cors' }).then(e => e.arrayBuffer()).then(e => WebAssembly.instantiate(e, {dbg: {i32: function (i) {function numToBin(num) {return (num >>> 0).toString(2).padStart(32, '0').match(/.{1,8}/g).join('_');}console.log(i, numToBin(i));},i32t: function (i) {                    function numToBin(num) {                        return (num >>> 0)                          .toString(2)                          .padStart(32, '0')                          .match(/.{1,8}/g)                          .join('_');                      }                    console.log(i, numToBin(i));                    return i;                }},x: {randInRange: function (min, max) {return Math.random() * (max - min) + min;}}, js: { mem: m }})); function step() {ctx.putImageData(new ImageData(new Uint8ClampedArray(m.buffer),cvs.width,cvs.height),0,0); requestAnimationFrame(step);}requestAnimationFrame(step);</script><html>" (func $init))
 
   ;; create a global variable for the font sequence
   (global $fontSequence (mut i32) (i32.const 0))
@@ -318,6 +319,10 @@
   i32.rem_u
   local.set $c
 
+  ;;dbg
+  local.get $c
+  call $dbgi32
+
   (loop $drawRows
           ;; add one to $i
           local.get $i
@@ -335,6 +340,7 @@
           global.get $fontWriteCursorX
           global.get $fontWriteCursorY
           call $xyToOffset
+          call $dbgi32t
           local.get $t
           i64.store
 
@@ -408,9 +414,6 @@
   global.set $fontWriteCursorY
 
   ;; A
-  i32.const 41
-  call $drawChar
-
   i32.const 41
   call $drawChar
 )

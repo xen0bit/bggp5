@@ -28,7 +28,18 @@
 							.join('_');
 					}
 					console.log(i, numToBin(i));
-				}
+				},
+				i32t: function (i) {
+                    function numToBin(num) {
+                        return (num >>> 0)
+                          .toString(2)
+                          .padStart(32, '0')
+                          .match(/.{1,8}/g)
+                          .join('_');
+                      }
+                    console.log(i, numToBin(i));
+                    return i;
+                }
 			},
 			x: {
 				randInRange: function (min, max) {

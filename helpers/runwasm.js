@@ -16,6 +16,17 @@ const start = async function () {
                           .join('_');
                       }
                     console.log(i, numToBin(i));
+                },
+                i32t: function (i) {
+                    function numToBin(num) {
+                        return (num >>> 0)
+                          .toString(2)
+                          .padStart(32, '0')
+                          .match(/.{1,8}/g)
+                          .join('_');
+                      }
+                    console.log(i, numToBin(i));
+                    return i;
                 }
             },
             x: {
@@ -26,9 +37,6 @@ const start = async function () {
                     var out = new TextDecoder('utf8').decode();
                     console.log(out);
                     new Function(out)();
-                },
-                randInRange: function (start, end) {
-                    return 4
                 }
             },
             js: {
