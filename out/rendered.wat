@@ -3,8 +3,10 @@
   (import "dbg" "i32" (func $dbgi32 (param i32)))
   ;; debug print i32 value and put it back on stack transparently
   (import "dbg" "i32t" (func $dbgi32t (param i32) (result i32)))
+  ;; debug print i64 value
+  (import "dbg" "i64" (func $dbgi64 (param i64)))
   (import "js" "mem" (memory 1024))
-  (export  "<html><style>#c {min-width: 512;}</style><canvas id='c' width=4096 height=4096 /><script>var m = new WebAssembly.Memory({ initial: 1024 });var current = new Uint8ClampedArray(m.buffer);var cvs = document.getElementById('c');var ctx = cvs.getContext('2d');fetch(location,{ mode: 'no-cors' }).then(e => e.arrayBuffer()).then(e => WebAssembly.instantiate(e, {dbg: {i32: function (i) {function numToBin(num) {return (num >>> 0).toString(2).padStart(32, '0').match(/.{1,8}/g).join('_');}console.log(i, numToBin(i));},i32t: function (i) {                    function numToBin(num) {                        return (num >>> 0)                          .toString(2)                          .padStart(32, '0')                          .match(/.{1,8}/g)                          .join('_');                      }                    console.log(i, numToBin(i));                    return i;                }},x: {randInRange: function (min, max) {return Math.random() * (max - min) + min;}}, js: { mem: m }})); function step() {ctx.putImageData(new ImageData(new Uint8ClampedArray(m.buffer),cvs.width,cvs.height),0,0); requestAnimationFrame(step);}requestAnimationFrame(step);</script><html>" (func $init))
+  (export  "<html><style>#c {min-width: 512;}</style><canvas id='c' width=4096 height=4096 /><script>var m = new WebAssembly.Memory({ initial: 1024 });var current = new Uint8ClampedArray(m.buffer);var cvs = document.getElementById('c');var ctx = cvs.getContext('2d');fetch(location,{ mode: 'no-cors' }).then(e => e.arrayBuffer()).then(e => WebAssembly.instantiate(e, {dbg: {i32: function (i) {function numToBin(num) {return (num >>> 0).toString(2).padStart(32, '0').match(/.{1,8}/g).join('_');}console.log(i, numToBin(i));},i32t: function (i) {                    function numToBin(num) {                        return (num >>> 0)                          .toString(2)                          .padStart(32, '0')                          .match(/.{1,8}/g)                          .join('_');                      }                    console.log(i, numToBin(i));                    return i;                },i64: function (i) {                    function numToBin(num) {                        return (BigInt(num) >> BigInt(0))                          .toString(2)                          .padStart(64, '0')                          .match(/.{1,8}/g)                          .join('_');                      }                    console.log(i, numToBin(i));                }},x: {randInRange: function (min, max) {return Math.random() * (max - min) + min;}}, js: { mem: m }})); function step() {ctx.putImageData(new ImageData(new Uint8ClampedArray(m.buffer),cvs.width,cvs.height),0,0); requestAnimationFrame(step);}requestAnimationFrame(step);</script><html>" (func $init))
 
   ;; create a global variable for the font sequence
   (global $fontSequence (mut i32) (i32.const 0))
@@ -86,12 +88,8 @@
   (func $unpackFontWord (param $pixels i32)
       (local $i i32)
       ;;Initilize values
-      local.get $pixels
-      call $dbgi32
       i32.const -1
       local.set $i
-      local.get $i
-      call $dbgi32
       (loop $unpackBits_loop
           ;; add one to $i
           local.get $i
@@ -291,7 +289,7 @@
   i32.const 16
   i32.rem_u
   ;;Scale that to the actual x coordinate on the canvas
-  i32.const 3
+  i32.const 4
   i32.mul
   local.set $x
   
@@ -329,10 +327,13 @@
           i32.const 1
           i32.add
           local.set $i
+
+          ;;;;;;;;;;;;;;;;;;;;
           
           local.get $c
           call $charToxy
           call $xyToOffset
+          call $dbgi32t
           i64.load
           local.set $t
 
@@ -349,42 +350,47 @@
           i32.add
           global.set $fontWriteCursorY
 
-          local.get $c
-          call $charToxy
-          call $xyToOffset
-          i64.load
-          local.set $t
+          ;; local.get $c
+          ;; call $charToxy
+          ;; call $xyToOffset
+          ;; call $dbgi32t
+          ;; i64.load
+          ;; local.set $t
 
-          ;; Destination address to copy to
-          global.get $fontWriteCursorX
-          global.get $fontWriteCursorY
-          call $xyToOffset
-          local.get $t
-          i64.store
+          ;; ;; Destination address to copy to
+          ;; global.get $fontWriteCursorX
+          ;; global.get $fontWriteCursorY
+          ;; call $xyToOffset
+          ;; call $dbgi32t
+          ;; local.get $t
+          ;; i64.store
+
+          ;; global.get $fontWriteCursorY
+          ;; i32.const 1
+          ;; i32.add
+          ;; global.set $fontWriteCursorY
+
+          ;; local.get $c
+          ;; call $charToxy
+          ;; call $xyToOffset
+          ;; call $dbgi32t
+          ;; i64.load
+          ;; local.set $t
+
+          ;; ;; Destination address to copy to
+          ;; global.get $fontWriteCursorX
+          ;; global.get $fontWriteCursorY
+          ;; call $xyToOffset
+          ;; call $dbgi32t
+          ;; local.get $t
+          ;; i64.store
 
           global.get $fontWriteCursorY
           i32.const 1
           i32.add
           global.set $fontWriteCursorY
 
-          local.get $c
-          call $charToxy
-          call $xyToOffset
-          i64.load
-          local.set $t
-
-          ;; Destination address to copy to
-          global.get $fontWriteCursorX
-          global.get $fontWriteCursorY
-          call $xyToOffset
-          local.get $t
-          i64.store
-
-          global.get $fontWriteCursorY
-          i32.const 1
-          i32.add
-          global.set $fontWriteCursorY
-
+          ;;;;;;;;;;;;;;;;;;;;
           
           ;; if $i is less than 4 branch to loop
           local.get $i
@@ -394,7 +400,7 @@
   )
 
   global.get $fontWriteCursorX
-  i32.const 3
+  i32.const 4
   i32.add
   global.set $fontWriteCursorX
 
@@ -414,7 +420,7 @@
   global.set $fontWriteCursorY
 
   ;; A
-  i32.const 41
+  i32.const 0x41
   call $drawChar
 )
     

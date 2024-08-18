@@ -27,6 +27,16 @@ const start = async function () {
                       }
                     console.log(i, numToBin(i));
                     return i;
+                },
+                i64: function (i) {
+                    function numToBin(num) {
+                        return (BigInt(num) >> BigInt(0))
+                          .toString(2)
+                          .padStart(64, '0')
+                          .match(/.{1,8}/g)
+                          .join('_');
+                      }
+                    console.log(i, numToBin(i));
                 }
             },
             x: {
