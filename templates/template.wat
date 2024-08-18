@@ -2,11 +2,14 @@
   ;; debug
   (import "dbg" "i32" (func $dbgi32 (param i32)))
   (import "x" "randInRange" (func $randInRange (param i32 i32)(result i32)))
-  (import "js" "mem" (memory 1))
+  (import "js" "mem" (memory 1024))
   (export  "{htmlStub}" (func $init))
 
   ;; create a global variable for the font sequence
   (global $fontSequence (mut i32) (i32.const 0))
+  (global $cursorSequence (mut i32) (i32.const 0))
+  (global $fontWriteCursorX (mut i32) (i32.const 0))
+  (global $fontWriteCursorY (mut i32) (i32.const 0))
 
   (func $seqToxy (param $s i32) (result i32 i32)
     (local $x i32)
@@ -29,7 +32,7 @@
   (func $xyToOffset (param $x i32) (param $y i32) (result i32)
     ;;Multiply y coordinate by width of image (128)
     local.get $y
-    i32.const 128
+    i32.const 4096
     i32.mul
     ;;Add our x coordinate
     local.get $x
@@ -277,15 +280,138 @@
     call $unpackFontWord
 )
 
-(func $drawChar (param $c i32)
+(func $charToxy (param $c i32) (result i32 i32)
+  (local $x i32)
+  (local $y i32)
 
+  ;;x
+  local.get $c
+  ;;Get the character's offset in the font row
+  i32.const 16
+  i32.rem_u
+  ;;Scale that to the actual x coordinate on the canvas
+  i32.const 3
+  i32.mul
+  local.set $x
+  
+  ;;y
+  local.get $c
+  ;;Get the character's offset in the font column
+  i32.const 16
+  i32.div_u
+  ;;Scale that to the actual y coordinate on the canvas
+  i32.const 4
+  i32.mul
+  local.set $y
+
+  local.get $x
+  local.get $y
+)
+
+(func $drawChar (param $c i32)
+  (local $i i32)
+  (local $t i64)
+
+  ;;Force ASCII
+  local.get $c
+  i32.const 128
+  i32.rem_u
+  local.set $c
+
+  (loop $drawRows
+          ;; add one to $i
+          local.get $i
+          i32.const 1
+          i32.add
+          local.set $i
+          
+          local.get $c
+          call $charToxy
+          call $xyToOffset
+          i64.load
+          local.set $t
+
+          ;; Destination address to copy to
+          global.get $fontWriteCursorX
+          global.get $fontWriteCursorY
+          call $xyToOffset
+          local.get $t
+          i64.store
+
+          global.get $fontWriteCursorY
+          i32.const 1
+          i32.add
+          global.set $fontWriteCursorY
+
+          local.get $c
+          call $charToxy
+          call $xyToOffset
+          i64.load
+          local.set $t
+
+          ;; Destination address to copy to
+          global.get $fontWriteCursorX
+          global.get $fontWriteCursorY
+          call $xyToOffset
+          local.get $t
+          i64.store
+
+          global.get $fontWriteCursorY
+          i32.const 1
+          i32.add
+          global.set $fontWriteCursorY
+
+          local.get $c
+          call $charToxy
+          call $xyToOffset
+          i64.load
+          local.set $t
+
+          ;; Destination address to copy to
+          global.get $fontWriteCursorX
+          global.get $fontWriteCursorY
+          call $xyToOffset
+          local.get $t
+          i64.store
+
+          global.get $fontWriteCursorY
+          i32.const 1
+          i32.add
+          global.set $fontWriteCursorY
+
+          
+          ;; if $i is less than 4 branch to loop
+          local.get $i
+          i32.const 4
+          i32.lt_s
+          br_if $drawRows
+  )
+
+  global.get $fontWriteCursorX
+  i32.const 3
+  i32.add
+  global.set $fontWriteCursorX
+
+
+  ;;call $dbgi32
+  ;;call $dbgi32
 )
 
 (func $init
+  ;;Load the font
   call $loadFont
 
+  ;;Init Cursor
+  i32.const 0
+  global.set $fontWriteCursorX
+  i32.const 32
+  global.set $fontWriteCursorY
+
   ;; A
-  i32.const 0x41
+  i32.const 41
+  call $drawChar
+
+  i32.const 41
   call $drawChar
 )
     

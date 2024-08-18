@@ -1,8 +1,12 @@
 <html>
-	<style>#c{min-width:1024;}</style>
-<canvas id='c' width=128 height=128 />
+<style>
+	#c {
+		min-width: 512;
+	}
+</style>
+<canvas id='c' width=4096 height=4096 />
 <script>
-	var m = new WebAssembly.Memory({ initial: 1 });
+	var m = new WebAssembly.Memory({ initial: 1024 });
 	var current = new Uint8ClampedArray(m.buffer);
 	var cvs = document.getElementById('c');
 	var ctx = cvs.getContext('2d');
@@ -14,15 +18,15 @@
 	).then(
 		e => WebAssembly.instantiate(
 			e, {
-				dbg: {
+			dbg: {
 				i32: function (i) {
 					function numToBin(num) {
 						return (num >>> 0)
-						  .toString(2)
-						  .padStart(32, '0')
-						  .match(/.{1,8}/g)
-						  .join('_');
-					  }
+							.toString(2)
+							.padStart(32, '0')
+							.match(/.{1,8}/g)
+							.join('_');
+					}
 					console.log(i, numToBin(i));
 				}
 			},
@@ -40,8 +44,8 @@
 				cvs.width,
 				cvs.height
 			),
-				0,
-				0
+			0,
+			0
 		); requestAnimationFrame(step);
 	}
 	requestAnimationFrame(step);

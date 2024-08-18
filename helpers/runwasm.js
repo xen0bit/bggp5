@@ -3,7 +3,7 @@ const buf = fs.readFileSync('out/rendered.html');
 
 const start = async function () {
     console.log("In runwasm.js: ");
-    var m = new WebAssembly.Memory({ initial: 1 });
+    var m = new WebAssembly.Memory({ initial: 1024 });
     await WebAssembly.instantiate(new Uint8Array(buf),
         {
             dbg: {
