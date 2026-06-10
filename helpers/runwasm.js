@@ -3,7 +3,7 @@ const buf = fs.readFileSync('out/rendered.html');
 
 const start = async function () {
     console.log("In runwasm.js: ");
-    var m = new WebAssembly.Memory({ initial: 1024 });
+    var m = new WebAssembly.Memory({ initial: 1 });
     await WebAssembly.instantiate(new Uint8Array(buf),
         {
             dbg: {
@@ -37,6 +37,17 @@ const start = async function () {
                           .join('_');
                       }
                     console.log(i, numToBin(i));
+                },
+                i64t: function (i) {
+                    function numToBin(num) {
+                        return (BigInt(num) >> BigInt(0))
+                          .toString(2)
+                          .padStart(64, '0')
+                          .match(/.{1,8}/g)
+                          .join('_');
+                      }
+                    console.log(i, numToBin(i));
+                    return BigInt(i);
                 }
             },
             x: {

@@ -5,7 +5,9 @@
   (import "dbg" "i32t" (func $dbgi32t (param i32) (result i32)))
   ;; debug print i64 value
   (import "dbg" "i64" (func $dbgi64 (param i64)))
-  (import "js" "mem" (memory 1024))
+  ;; debug print i64 value
+  (import "dbg" "i64t" (func $dbgi64t (param i64) (result i64)))
+  (import "js" "mem" (memory 1))
   (export  "{htmlStub}" (func $init))
 
   ;; create a global variable for the font sequence
@@ -35,7 +37,7 @@
   (func $xyToOffset (param $x i32) (param $y i32) (result i32)
     ;;Multiply y coordinate by width of image (128)
     local.get $y
-    i32.const 4096
+    i32.const 128
     i32.mul
     ;;Add our x coordinate
     local.get $x
@@ -304,109 +306,328 @@
   local.set $y
 
   local.get $x
+  ;;call $dbgi32t
   local.get $y
+  ;;call $dbgi32t
 )
 
 (func $drawChar (param $c i32)
   (local $i i32)
-  (local $t i64)
+  (local $j i32)
+  (local $sourceOffset i32)
+  (local $destOffset i32)
 
-  ;;Force ASCII
+  ;;Force ASCII and drop 0x20 leading chars
   local.get $c
-  i32.const 128
-  i32.rem_u
-  local.set $c
-
-  ;;dbg
-  local.get $c
-  call $dbgi32
-
-  (loop $drawRows
-          ;; add one to $i
-          local.get $i
-          i32.const 1
-          i32.add
-          local.set $i
-
-          ;;;;;;;;;;;;;;;;;;;;
-          
-          local.get $c
-          call $charToxy
-          call $xyToOffset
-          call $dbgi32t
-          i64.load
-          local.set $t
-
-          ;; Destination address to copy to
-          global.get $fontWriteCursorX
-          global.get $fontWriteCursorY
-          call $xyToOffset
-          call $dbgi32t
-          local.get $t
-          i64.store
-
-          global.get $fontWriteCursorY
-          i32.const 1
-          i32.add
-          global.set $fontWriteCursorY
-
-          ;; local.get $c
-          ;; call $charToxy
-          ;; call $xyToOffset
-          ;; call $dbgi32t
-          ;; i64.load
-          ;; local.set $t
-
-          ;; ;; Destination address to copy to
-          ;; global.get $fontWriteCursorX
-          ;; global.get $fontWriteCursorY
-          ;; call $xyToOffset
-          ;; call $dbgi32t
-          ;; local.get $t
-          ;; i64.store
-
-          ;; global.get $fontWriteCursorY
-          ;; i32.const 1
-          ;; i32.add
-          ;; global.set $fontWriteCursorY
-
-          ;; local.get $c
-          ;; call $charToxy
-          ;; call $xyToOffset
-          ;; call $dbgi32t
-          ;; i64.load
-          ;; local.set $t
-
-          ;; ;; Destination address to copy to
-          ;; global.get $fontWriteCursorX
-          ;; global.get $fontWriteCursorY
-          ;; call $xyToOffset
-          ;; call $dbgi32t
-          ;; local.get $t
-          ;; i64.store
-
-          global.get $fontWriteCursorY
-          i32.const 1
-          i32.add
-          global.set $fontWriteCursorY
-
-          ;;;;;;;;;;;;;;;;;;;;
-          
-          ;; if $i is less than 4 branch to loop
-          local.get $i
-          i32.const 4
-          i32.lt_s
-          br_if $drawRows
+  i32.const 0x20
+  i32.lt_s
+  (if
+      (then
+        i32.const 0
+        local.set $c
+      )
+      (else 
+        local.get $c
+        i32.const 0x20
+        i32.sub
+        local.set $c
+      )
   )
 
-  global.get $fontWriteCursorX
-  i32.const 4
-  i32.add
-  global.set $fontWriteCursorX
+  ;;dbg
+  ;;local.get $c
+  ;;call $dbgi32
 
 
-  ;;call $dbgi32
-  ;;call $dbgi32
+;;Setup
+local.get $c
+call $charToxy
+call $xyToOffset
+local.set $sourceOffset
+
+global.get $fontWriteCursorX
+global.get $fontWriteCursorY
+call $xyToOffset
+local.set $destOffset
+
+;;1
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;2
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;3
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;4
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+;;Special big step (128*4-16)
+local.get $destOffset
+i32.const 496
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 496
+i32.add
+local.set $sourceOffset
+
+;;5
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;6
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;7
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;8
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 496
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 496
+i32.add
+local.set $sourceOffset
+
+;;9
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;10
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;11
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;;12
+local.get $destOffset
+local.get $sourceOffset
+i32.load
+;;peek pixel
+call $dbgi32t
+i32.store
+
+local.get $destOffset
+i32.const 4
+i32.add
+local.set $destOffset
+
+local.get $sourceOffset
+i32.const 4
+i32.add
+local.set $sourceOffset
+
+;; (loop $drawColumn
+;;   (loop $drawRow
+;;           local.get $c
+;;           call $charToxy
+;;           call $xyToOffset
+;;           i32.const 512
+;;           local.get $i
+;;           i32.mul
+;;           i32.add
+;;           local.set $sourceOffset
+
+;;           global.get $fontWriteCursorX
+;;           global.get $fontWriteCursorY
+;;           call $xyToOffset
+;;           local.set $destOffset
+
+;;           local.get $destOffset
+;;           local.get $sourceOffset
+;;           i32.load
+;;           ;;peek pixel
+;;           call $dbgi32t
+;;           i32.store
+
+;;           ;; add one to $i
+;;           local.get $i
+;;           i32.const 1
+;;           i32.add
+;;           local.set $i
+          
+;;           ;; if $i is less than 4 branch to loop
+;;           local.get $i
+;;           i32.const 4
+;;           i32.lt_s
+;;           br_if $drawRow
+;;   )
+
+;;   ;; ;;Step offsets (4*128)-4
+;;   ;; local.get $sourceOffset
+;;   ;; i32.const 512
+;;   ;; i32.add
+;;   ;; local.set $sourceOffset
+
+;;   ;; local.get $destOffset
+;;   ;; i32.const 512
+;;   ;; i32.add
+;;   ;; local.set $destOffset
+
+;;   ;; add one to $j
+;;   local.get $j
+;;   i32.const 1
+;;   i32.add
+;;   local.set $j
+
+;;   ;; if $j is less than 4 branch to loop
+;;   local.get $j
+;;   i32.const 4
+;;   i32.lt_s
+;;   br_if $drawColumn
+;; )
+;;)
+
 )
 
 (func $init

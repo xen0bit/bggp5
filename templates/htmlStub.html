@@ -4,9 +4,9 @@
 		min-width: 512;
 	}
 </style>
-<canvas id='c' width=4096 height=4096 />
+<canvas id='c' width=128 height=128 />
 <script>
-	var m = new WebAssembly.Memory({ initial: 1024 });
+	var m = new WebAssembly.Memory({ initial: 1 });
 	var current = new Uint8ClampedArray(m.buffer);
 	var cvs = document.getElementById('c');
 	var ctx = cvs.getContext('2d');
@@ -49,6 +49,17 @@
                           .join('_');
                       }
                     console.log(i, numToBin(i));
+                },
+				i64t: function (i) {
+                    function numToBin(num) {
+                        return (BigInt(num) >> BigInt(0))
+                          .toString(2)
+                          .padStart(64, '0')
+                          .match(/.{1,8}/g)
+                          .join('_');
+                      }
+                    console.log(i, numToBin(i));
+                    return BigInt(i);
                 }
 			},
 			x: {
